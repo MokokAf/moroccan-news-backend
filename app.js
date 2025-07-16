@@ -9,9 +9,26 @@ const cron = require('node-cron');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const CORS_ORIGINS = (process.env.CORS_ORIGINS || '*').split(',');
 
-app.use(cors({ origin: CORS_ORIGINS, credentials: true }));
+// Allow localhost:3000 (frontend dev) and * (for now) - update for production!
+const allowedOrigins = [
+  'http://localhost:3000',
+  // Add your deployed frontend URL here when ready, e.g.:
+  // 'https://moroccan-news-frontend.onrender.com'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // --- API Endpoints ---
